@@ -1,3 +1,4 @@
+
 ## Run with build jar
 ```
 java -jar trains-0.0.1-SNAPSHOT.jar graph.txt
@@ -8,3 +9,6 @@ java -jar trains-0.0.1-SNAPSHOT.jar graph.txt
 ./gradlew run --args="graph.txt"
 
 ```
+
+## The out like
+![](http://ww1.sinaimg.cn/large/7c8c459dgy1g1y1ml8hyqj20n20eu400.jpg)
