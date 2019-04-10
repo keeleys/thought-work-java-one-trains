@@ -113,7 +113,6 @@ public class Graph {
      * @return
      */
     private List<String> maximumStops(char startPoint, char endPoint, int stops) {
-        // 先找出下一个点
         List<String> routesAvailable = new ArrayList<>();
 
         if (startPoint == endPoint && stops >= 0) {
@@ -143,8 +142,8 @@ public class Graph {
      * @return
      */
     private List<String> equalsStops(char startPoint, char endPoint, int stops) {
-        // 先找出下一个点
         List<String> routesAvailable = new ArrayList<>();
+        // 停留数达到并且最后一次刚好到目的地
         if (startPoint == endPoint && stops == 0) {
             routesAvailable.add(endPoint + "");
             return routesAvailable;
@@ -172,7 +171,7 @@ public class Graph {
     private List<String> lessThenLength(char startPoint, char endPoint, String currentPath, int maxLength) {
         List<String> routesAvailable = new ArrayList<>();
         int currentLength = this.routeLength(currentPath);
-        // less then maxLength not less equals, so >= maxLength
+        // 如果大于等于指定maxLength,就跳出递归不做了
         if(currentLength >= maxLength){
             return routesAvailable;
         }
