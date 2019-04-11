@@ -11,7 +11,8 @@ public class Graph {
     /**
      * ([A-Z]{2}[0-9],?)+
      * 构造连接点和线图
-     * @param graph  like "AB5,BC4,CD8,DC8,DE6,AD5,CE2,EB3,AE7"
+     *
+     * @param graph like "AB5,BC4,CD8,DC8,DE6,AD5,CE2,EB3,AE7"
      */
     public Graph(String graph) {
         final Pattern r = Pattern.compile("^[A-Z]{2}[0-9]$");
@@ -24,7 +25,8 @@ public class Graph {
     }
 
     /**
-     * 计算路线的长度, 循环累加..
+     * 计算路线的长度, 计算方法1-5 循环累加..
+     *
      * @param route 路线 例如 A-D
      * @return
      */
@@ -44,9 +46,10 @@ public class Graph {
 
     /**
      * 找到满足最大停留数的可到达的路径数量
+     * 计算方法6
      * @param startPoint 开始点
-     * @param endPoint 目的点
-     * @param stops 最大停留数
+     * @param endPoint   目的点
+     * @param stops      最大停留数
      * @return
      */
     public int routeCountStopsSize(char startPoint, char endPoint, int stops) {
@@ -56,9 +59,10 @@ public class Graph {
 
     /**
      * 找到满足指定停留数的可到达的路径数量
+     * 计算方法7
      * @param startPoint 开始点
-     * @param endPoint 结束点
-     * @param stops 指定的停留数
+     * @param endPoint   结束点
+     * @param stops      指定的停留数
      * @return
      */
     public int routeEqualsStopsSize(char startPoint, char endPoint, int stops) {
@@ -67,17 +71,19 @@ public class Graph {
 
     /**
      * 找到最短路径的长度 (思路,最短路径不会超过所有节点,适用于节点少的时候..)
+     * 计算方法 8-9
      * @param startPoint 开始点
-     * @param endPoint 目的点
+     * @param endPoint   目的点
      * @return
      */
-    public int routeShortest(char startPoint,char endPoint) {
+    public int routeShortest(char startPoint, char endPoint) {
         List<String> list = this.maximumStops(startPoint, endPoint, lineMap.size());
         int shortLength = Integer.MAX_VALUE;
-        for(String s : list) {
-            if(s.length()==1) continue;
+        for (String s : list) {
+            // 起点和目的地一样的这条过滤掉..
+            if (s.length() == 1) continue;
             int result = this.routeLength(s);
-            if(shortLength > result) {
+            if (shortLength > result) {
                 shortLength = result;
             }
         }
@@ -86,13 +92,14 @@ public class Graph {
 
     /**
      * 找到小于指定线路长度的2点的线路数量
+     * 计算方法 10
      * @param startPoint 开始点
-     * @param endPoint 目的点
-     * @param maxLength 最大的长度
+     * @param endPoint   目的点
+     * @param maxLength  最大的长度
      * @return
      */
 
-    public int routLessThenLength(char startPoint,char endPoint,int maxLength){
+    public int routLessThenLength(char startPoint, char endPoint, int maxLength) {
         List<String> result = new ArrayList<>();
         for (Line line : lineMap.get(startPoint)) {
             String currentPath = startPoint + JOIN_CHAR + line.getEndPoint();
@@ -106,10 +113,11 @@ public class Graph {
 
 
     /**
-     * 得到满足最大停留的路径,用递归搜索的
+     * 得到满足最大停留的所有路径,用递归搜索的
+     *
      * @param startPoint 开始节点
-     * @param endPoint 目的节点
-     * @param stops 最大停留数目
+     * @param endPoint   目的节点
+     * @param stops      最大停留数目
      * @return
      */
     private List<String> maximumStops(char startPoint, char endPoint, int stops) {
@@ -136,9 +144,10 @@ public class Graph {
 
     /**
      * 得到满足停留数一致的路径
+     *
      * @param startPoint 开始节点
-     * @param endPoint 目的节点
-     * @param stops 停留数目
+     * @param endPoint   目的节点
+     * @param stops      停留数目
      * @return
      */
     private List<String> equalsStops(char startPoint, char endPoint, int stops) {
@@ -162,17 +171,18 @@ public class Graph {
 
     /**
      * 找到小于指定线路长度的2点的所有路线
-     * @param startPoint 开始节点
-     * @param endPoint 结束节点
+     *
+     * @param startPoint  开始节点
+     * @param endPoint    结束节点
      * @param currentPath 搜索的路线 like 'A-B-C'
-     * @param maxLength 最大线路长度
+     * @param maxLength   最大线路长度
      * @return
      */
     private List<String> lessThenLength(char startPoint, char endPoint, String currentPath, int maxLength) {
         List<String> routesAvailable = new ArrayList<>();
         int currentLength = this.routeLength(currentPath);
         // 如果大于等于指定maxLength,就跳出递归不做了
-        if(currentLength >= maxLength){
+        if (currentLength >= maxLength) {
             return routesAvailable;
         }
         if (startPoint == endPoint) {
@@ -182,7 +192,7 @@ public class Graph {
             final String nextPath = currentPath + JOIN_CHAR + line.getEndPoint();
             List<String> validRoutes = this.lessThenLength(line.getEndPoint(), endPoint, nextPath, maxLength);
             for (String route : validRoutes) {
-                routesAvailable.add(startPoint +JOIN_CHAR + route);
+                routesAvailable.add(startPoint + JOIN_CHAR + route);
             }
         }
         return routesAvailable;
@@ -190,9 +200,10 @@ public class Graph {
 
     /**
      * 得到2个点的长度
+     *
      * @param start 起点
-     * @param end 终点
-     * @return 如果有连接,返回连接,如果没连接返回-1
+     * @param end   终点
+     * @return 如果有连接, 返回连接, 如果没连接返回-1
      */
     private int getLineLength(char start, char end) {
         return lineMap.values().stream().flatMap(Collection::stream)
