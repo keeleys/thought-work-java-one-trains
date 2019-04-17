@@ -26,7 +26,7 @@ public class Graph {
 
     /**
      * 计算路线的长度, 计算方法1-5 循环累加..
-     *
+     * 1324 2033
      * @param route 路线 例如 A-D
      * @return
      */
@@ -53,8 +53,8 @@ public class Graph {
      * @return
      */
     public int routeCountStopsSize(char startPoint, char endPoint, int stops) {
-        int extra = startPoint == endPoint ? -1 : 0;
-        return this.maximumStops(startPoint, endPoint, stops).size() + extra;
+        List<String> result= this.maximumStops(startPoint, endPoint, stops,startPoint+"", new ArrayList<>());
+        return result.size();
     }
 
     /**
@@ -66,7 +66,8 @@ public class Graph {
      * @return
      */
     public int routeEqualsStopsSize(char startPoint, char endPoint, int stops) {
-        return this.equalsStops(startPoint, endPoint, stops).size();
+        List<String> result = this.equalsStops(startPoint, endPoint, stops, startPoint+"",new ArrayList<>());
+        return result.size();
     }
 
     /**
@@ -77,17 +78,26 @@ public class Graph {
      * @return
      */
     public int routeShortest(char startPoint, char endPoint) {
-        List<String> list = this.maximumStops(startPoint, endPoint, lineMap.size());
-        int shortLength = Integer.MAX_VALUE;
-        for (String s : list) {
-            // 起点和目的地一样的这条过滤掉..
-            if (s.length() == 1) continue;
-            int result = this.routeLength(s);
-            if (shortLength > result) {
-                shortLength = result;
-            }
+        Map<Character,Integer> maps = new HashMap<>();
+        lineMap.keySet().forEach(it->maps.put(it,Integer.MAX_VALUE));
+
+        LinkedList<Character> link = new LinkedList();
+
+        lineMap.get(startPoint).forEach(it->{
+            maps.put(it.getEndPoint(),it.getLength());
+            link.push(it.getEndPoint());
+        });
+        while (!link.isEmpty()){
+            Character point = link.poll();
+            lineMap.get(point).forEach(it->{
+                final int length = maps.get(point) + it.getLength();
+                if(maps.get(it.getEndPoint()) > length) {
+                    maps.put(it.getEndPoint(), length);
+                    link.push(it.getEndPoint());
+                }
+            });
         }
-        return shortLength;
+        return maps.get(endPoint);
     }
 
     /**
@@ -100,14 +110,7 @@ public class Graph {
      */
 
     public int routLessThenLength(char startPoint, char endPoint, int maxLength) {
-        List<String> result = new ArrayList<>();
-        for (Line line : lineMap.get(startPoint)) {
-            String currentPath = startPoint + JOIN_CHAR + line.getEndPoint();
-            List<String> validRoutes = lessThenLength(line.getEndPoint(), endPoint, currentPath, maxLength);
-            for (String route : validRoutes) {
-                result.add(startPoint + "-" + route);
-            }
-        }
+        List<String> result = this.lessThenLength(startPoint, endPoint, maxLength,startPoint+"",new ArrayList<>());
         return result.size();
     }
 
@@ -120,26 +123,20 @@ public class Graph {
      * @param stops      最大停留数目
      * @return
      */
-    private List<String> maximumStops(char startPoint, char endPoint, int stops) {
-        List<String> routesAvailable = new ArrayList<>();
+    private List<String> maximumStops(char startPoint, char endPoint, int stops, String path, List<String> result) {
 
-        if (startPoint == endPoint && stops >= 0) {
-            routesAvailable.add(endPoint + "");
-        }
         if (stops == 0) {
-            return routesAvailable;
+            return result;
         }
-
-        final int stopsLeft = stops - 1;
-        if (stops >= 0) {
-            for (Line line : lineMap.get(startPoint)) {
-                List<String> validRoutes = maximumStops(line.getEndPoint(), endPoint, stopsLeft);
-                for (String route : validRoutes) {
-                    routesAvailable.add(startPoint + JOIN_CHAR + route);
-                }
+        for (Line line : lineMap.get(startPoint)) {
+            final String nextPath =  path + JOIN_CHAR + line.getEndPoint();
+            if (line.getEndPoint() == endPoint ) {
+                result.add(nextPath);
+            } else {
+                this.maximumStops(line.getEndPoint(), endPoint, stops - 1, nextPath, result);
             }
         }
-        return routesAvailable;
+        return result;
     }
 
     /**
@@ -150,23 +147,20 @@ public class Graph {
      * @param stops      停留数目
      * @return
      */
-    private List<String> equalsStops(char startPoint, char endPoint, int stops) {
-        List<String> routesAvailable = new ArrayList<>();
+    private List<String> equalsStops(char startPoint, char endPoint, int stops, String path, List<String> result) {
         // 停留数达到并且最后一次刚好到目的地
-        if (startPoint == endPoint && stops == 0) {
-            routesAvailable.add(endPoint + "");
-            return routesAvailable;
+        if (stops == 0) {
+            return result;
         }
-        final int stopsLeft = stops - 1;
-        if (stopsLeft >= 0) {
-            for (Line line : lineMap.get(startPoint)) {
-                List<String> validRoutes = equalsStops(line.getEndPoint(), endPoint, stopsLeft);
-                for (String route : validRoutes) {
-                    routesAvailable.add(startPoint + JOIN_CHAR + route);
-                }
+        for (Line line : lineMap.get(startPoint)) {
+            final String nextPath = path +JOIN_CHAR + line.getEndPoint();
+            if(line.getEndPoint() == endPoint && stops == 1) {
+                result.add(nextPath);
+            } else {
+                this.equalsStops(line.getEndPoint(), endPoint, stops -1, nextPath, result);
             }
         }
-        return routesAvailable;
+        return result;
     }
 
     /**
@@ -174,28 +168,19 @@ public class Graph {
      *
      * @param startPoint  开始节点
      * @param endPoint    结束节点
-     * @param currentPath 搜索的路线 like 'A-B-C'
-     * @param maxLength   最大线路长度
      * @return
      */
-    private List<String> lessThenLength(char startPoint, char endPoint, String currentPath, int maxLength) {
-        List<String> routesAvailable = new ArrayList<>();
-        int currentLength = this.routeLength(currentPath);
-        // 如果大于等于指定maxLength,就跳出递归不做了
-        if (currentLength >= maxLength) {
-            return routesAvailable;
-        }
-        if (startPoint == endPoint) {
-            routesAvailable.add(endPoint + "");
-        }
+    private List<String> lessThenLength(char startPoint, char endPoint, int left,String path, List<String> result) {
+        if(left < 0) return result;
+
         for (Line line : lineMap.get(startPoint)) {
-            final String nextPath = currentPath + JOIN_CHAR + line.getEndPoint();
-            List<String> validRoutes = this.lessThenLength(line.getEndPoint(), endPoint, nextPath, maxLength);
-            for (String route : validRoutes) {
-                routesAvailable.add(startPoint + JOIN_CHAR + route);
+            final String nextPath = path + JOIN_CHAR + line.getEndPoint();
+            if(line.getEndPoint() == endPoint && left > line.getLength()) {
+                result.add(nextPath);
             }
+            this.lessThenLength(line.getEndPoint(), endPoint, left - line.getLength(), nextPath, result);
         }
-        return routesAvailable;
+        return result;
     }
 
     /**
