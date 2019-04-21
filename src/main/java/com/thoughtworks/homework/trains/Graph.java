@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Graph {
-    private final Map<Character, List<Line>> lineMap;
+    private final Map<Character, List<Edge>> lineMap;
     private static final String JOIN_CHAR = "-";
 
     /**
@@ -20,8 +20,8 @@ public class Graph {
                 .splitAsStream(graph)
                 .filter(x -> r.matcher(x).matches())
                 .distinct()
-                .map(x -> new Line(x.charAt(0), x.charAt(1), Character.getNumericValue(x.charAt(2))))
-                .collect(Collectors.groupingBy(Line::getStartPoint));
+                .map(x -> new Edge(x.charAt(0), x.charAt(1), Character.getNumericValue(x.charAt(2))))
+                .collect(Collectors.groupingBy(Edge::getStartPoint));
     }
 
     /**
@@ -128,12 +128,12 @@ public class Graph {
         if (stops == 0) {
             return result;
         }
-        for (Line line : lineMap.get(startPoint)) {
-            final String nextPath =  path + JOIN_CHAR + line.getEndPoint();
-            if (line.getEndPoint() == endPoint ) {
+        for (Edge edge : lineMap.get(startPoint)) {
+            final String nextPath =  path + JOIN_CHAR + edge.getEndPoint();
+            if (edge.getEndPoint() == endPoint ) {
                 result.add(nextPath);
             } else {
-                this.maximumStops(line.getEndPoint(), endPoint, stops - 1, nextPath, result);
+                this.maximumStops(edge.getEndPoint(), endPoint, stops - 1, nextPath, result);
             }
         }
         return result;
@@ -152,12 +152,12 @@ public class Graph {
         if (stops == 0) {
             return result;
         }
-        for (Line line : lineMap.get(startPoint)) {
-            final String nextPath = path +JOIN_CHAR + line.getEndPoint();
-            if(line.getEndPoint() == endPoint && stops == 1) {
+        for (Edge edge : lineMap.get(startPoint)) {
+            final String nextPath = path +JOIN_CHAR + edge.getEndPoint();
+            if(edge.getEndPoint() == endPoint && stops == 1) {
                 result.add(nextPath);
             } else {
-                this.equalsStops(line.getEndPoint(), endPoint, stops -1, nextPath, result);
+                this.equalsStops(edge.getEndPoint(), endPoint, stops -1, nextPath, result);
             }
         }
         return result;
@@ -173,12 +173,12 @@ public class Graph {
     private List<String> lessThenLength(char startPoint, char endPoint, int left,String path, List<String> result) {
         if(left < 0) return result;
 
-        for (Line line : lineMap.get(startPoint)) {
-            final String nextPath = path + JOIN_CHAR + line.getEndPoint();
-            if(line.getEndPoint() == endPoint && left > line.getLength()) {
+        for (Edge edge : lineMap.get(startPoint)) {
+            final String nextPath = path + JOIN_CHAR + edge.getEndPoint();
+            if(edge.getEndPoint() == endPoint && left > edge.getLength()) {
                 result.add(nextPath);
             }
-            this.lessThenLength(line.getEndPoint(), endPoint, left - line.getLength(), nextPath, result);
+            this.lessThenLength(edge.getEndPoint(), endPoint, left - edge.getLength(), nextPath, result);
         }
         return result;
     }
@@ -193,7 +193,7 @@ public class Graph {
     private int getLineLength(char start, char end) {
         return lineMap.values().stream().flatMap(Collection::stream)
                 .filter(x -> x.getStartPoint() == start && x.getEndPoint() == end)
-                .findAny().map(Line::getLength).orElse(-1);
+                .findAny().map(Edge::getLength).orElse(-1);
     }
 
 }

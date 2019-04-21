@@ -3,7 +3,7 @@ package com.thoughtworks.homework.trains;
 /**
  * 线的抽象类
  */
-public class Line {
+public class Edge {
     private char startPoint;
     private char endPoint;
     private int length;
@@ -20,7 +20,7 @@ public class Line {
         return length;
     }
 
-    public Line(char startPoint, char endPoint, int length) {
+    public Edge(char startPoint, char endPoint, int length) {
         this.startPoint = startPoint;
         this.endPoint = endPoint;
         this.length = length;
@@ -28,7 +28,7 @@ public class Line {
 
     @Override
     public String toString() {
-        return "Line{" +
+        return "Edge{" +
                 "startPoint=" + startPoint +
                 ", endPoint=" + endPoint +
                 ", length=" + length +
